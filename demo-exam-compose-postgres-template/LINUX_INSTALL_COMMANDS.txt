@@ -1,0 +1,176 @@
+INSTALL COMMANDS FOR THE TEMPLATE PROJECT ON LINUX
+Target distro: Ubuntu / Debian
+
+This template uses:
+- Kotlin Compose Desktop
+- Room
+- bundled SQLite
+
+It does NOT require:
+- PostgreSQL
+- Docker
+- external DB server
+
+--------------------------------------------------
+1. Update the system
+--------------------------------------------------
+sudo apt update
+sudo apt upgrade -y
+
+--------------------------------------------------
+2. Install base utilities
+--------------------------------------------------
+sudo apt install -y \
+  git \
+  curl \
+  wget \
+  unzip \
+  zip \
+  xz-utils \
+  file \
+  nano \
+  ca-certificates \
+  build-essential \
+  pkg-config
+
+--------------------------------------------------
+3. Install JDK 17
+--------------------------------------------------
+sudo apt install -y openjdk-17-jdk
+java -version
+javac -version
+
+--------------------------------------------------
+4. Install libraries required for Kotlin Compose Desktop
+--------------------------------------------------
+sudo apt install -y \
+  fontconfig \
+  libfreetype6 \
+  libx11-6 \
+  libxext6 \
+  libxrender1 \
+  libxtst6 \
+  libxi6 \
+  libxrandr2 \
+  libxcursor1 \
+  libxdamage1 \
+  libxfixes3 \
+  libxinerama1 \
+  libgl1 \
+  libglu1-mesa \
+  libgtk-3-0 \
+  libnss3 \
+  libgbm1 \
+  libatk-bridge2.0-0 \
+  libdrm2
+
+# If your distro uses the new package name for ALSA:
+sudo apt install -y libasound2t64
+
+# If the old name exists instead:
+sudo apt install -y libasound2
+
+--------------------------------------------------
+5. Optional: install tools for packaging the desktop app
+--------------------------------------------------
+sudo apt install -y fakeroot dpkg-dev
+
+--------------------------------------------------
+6. Copy or unpack the project
+--------------------------------------------------
+mkdir -p ~/projects
+cd ~/projects
+
+# If the project is in a zip archive:
+# unzip demo-exam-compose-room-template.zip
+
+# If the project already exists as a folder:
+cd ~/projects/demo-exam-compose-postgres-template
+
+chmod +x gradlew
+
+--------------------------------------------------
+7. Check project files
+--------------------------------------------------
+ls -la
+find src -maxdepth 6 -type f | head -n 30
+
+--------------------------------------------------
+8. Check application settings
+--------------------------------------------------
+cat src/main/resources/application.properties
+
+# Important values:
+# app.title
+# app.company_name
+# db.file_name
+
+--------------------------------------------------
+9. Build and check the project
+--------------------------------------------------
+./gradlew compileKotlin
+./gradlew test
+
+--------------------------------------------------
+10. Run the desktop application
+--------------------------------------------------
+./gradlew run
+
+--------------------------------------------------
+11. Import exam XLSX files into the local Room database
+--------------------------------------------------
+# Example if files are in another folder:
+./gradlew importXlsx -PimportDir="$HOME/demo-exam-files"
+
+# Example if files are in the project imports folder:
+./gradlew importXlsx -PimportDir="$PWD/imports"
+
+--------------------------------------------------
+12. Copy exam files into the project imports folder
+--------------------------------------------------
+mkdir -p imports
+cp "$HOME/demo-exam-files/Tovar.xlsx" imports/ 2>/dev/null || true
+cp "$HOME/demo-exam-files/user_import.xlsx" imports/ 2>/dev/null || true
+cp "$HOME/demo-exam-files/Заказ_import.xlsx" imports/ 2>/dev/null || true
+cp "$HOME/demo-exam-files/Пункты выдачи_import.xlsx" imports/ 2>/dev/null || true
+
+--------------------------------------------------
+13. Override settings through environment variables if needed
+--------------------------------------------------
+export APP_TITLE="Book Store Demo Template"
+export APP_COMPANY_NAME="Book Store"
+export DB_FILE_NAME="book_store_exam.db"
+
+./gradlew run
+
+--------------------------------------------------
+14. Build a Linux package
+--------------------------------------------------
+./gradlew packageDistributionForCurrentOS
+
+--------------------------------------------------
+15. Full install + run flow in one block
+--------------------------------------------------
+sudo apt update
+sudo apt install -y \
+  git curl wget unzip zip xz-utils file nano \
+  ca-certificates build-essential pkg-config \
+  openjdk-17-jdk fakeroot dpkg-dev \
+  fontconfig libfreetype6 libx11-6 libxext6 libxrender1 libxtst6 libxi6 \
+  libxrandr2 libxcursor1 libxdamage1 libxfixes3 libxinerama1 \
+  libgl1 libglu1-mesa libgtk-3-0 libnss3 libgbm1 libatk-bridge2.0-0 libdrm2
+
+cd ~/projects/demo-exam-compose-postgres-template
+chmod +x gradlew
+./gradlew compileKotlin
+./gradlew test
+./gradlew run
+
+--------------------------------------------------
+16. Notes
+--------------------------------------------------
+- Gradle is not required separately because the project uses Gradle Wrapper.
+- PostgreSQL is not required.
+- Docker is not required.
+- The SQLite database file will be created automatically inside storage/database.
+- If the app does not start because of the sound package name, install libasound2 or libasound2t64.

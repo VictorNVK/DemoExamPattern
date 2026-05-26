@@ -1,0 +1,12 @@
+.gradle/
+.idea/
+build/
+out/
+*.iml
+*.ipr
+*.iws
+local.properties
+storage/database/*
+!storage/database/.gitkeep
+storage/images/*
+!storage/images/.gitkeep
