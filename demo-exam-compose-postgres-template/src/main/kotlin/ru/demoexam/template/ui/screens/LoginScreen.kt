@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Button
@@ -46,16 +47,18 @@ fun LoginScreen(
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
                 Image(
-                    painter = painterResource("assets/logo.svg"),
+                    painter = painterResource("assets/icon.png"),
                     contentDescription = "Логотип",
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(96.dp),
                 )
                 Text(
-                    text = "Шаблон для демоэкзамена",
+                    text = "Книжный магазин",
                     style = MaterialTheme.typography.headlineSmall,
                 )
                 Text(
-                    text = "Авторизация берется из базы данных. Для быстрого старта доступны логины client / manager / admin.",
+                    text = "Вход по логину и паролю из user_import.xlsx. Примеры: ptec8ym@yahoo.com / LdNyos (менеджер), 94d5ous@gmail.com / uzWC67 (администратор).",
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 OutlinedTextField(

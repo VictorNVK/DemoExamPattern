@@ -21,6 +21,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import androidx.compose.ui.window.rememberWindowState
 import ru.demoexam.template.navigation.AppScreen
 import ru.demoexam.template.ui.components.AppTopBar
 import ru.demoexam.template.ui.components.MessageDialog
@@ -32,7 +33,8 @@ import ru.demoexam.template.ui.theme.AppTheme
 
 fun launchTemplateApplication() = application {
     val appState = remember { AppState() }
-    val logoPainter = painterResource("assets/logo.svg")
+    val windowState = rememberWindowState(width = 1280.dp, height = 800.dp)
+    val iconPainter = painterResource("assets/icon.png")
 
     LaunchedEffect(Unit) {
         appState.initialize()
@@ -47,7 +49,8 @@ fun launchTemplateApplication() = application {
     Window(
         onCloseRequest = ::exitApplication,
         title = appState.windowTitle,
-        icon = logoPainter,
+        state = windowState,
+        icon = iconPainter,
     ) {
         AppTheme {
             appState.uiMessage?.let { message ->
@@ -148,7 +151,7 @@ private fun LoadingScreen() {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             CircularProgressIndicator()
-            Text("Подготовка шаблона и подключение к базе данных...")
+            Text("Подключение к Spring backend...")
         }
     }
 }

@@ -2,7 +2,6 @@ package ru.demoexam.template.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -13,8 +12,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import ru.demoexam.template.model.UserSession
 
@@ -28,7 +29,13 @@ fun AppTopBar(
     onExit: () -> Unit,
 ) {
     TopAppBar(
-        title = { Text(title) },
+        title = {
+            Text(
+                text = title,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        },
         navigationIcon = {
             if (canGoBack) {
                 IconButton(onClick = onBack) {
@@ -40,25 +47,24 @@ fun AppTopBar(
             }
         },
         actions = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(end = 8.dp),
-                horizontalArrangement = Arrangement.End,
-            ) {
-                AssistChip(
-                    onClick = {},
-                    label = {
-                        Text("${session.fullName} • ${session.role.title}")
-                    },
-                )
-                IconButton(onClick = onExit) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ExitToApp,
-                        contentDescription = "На экран входа",
+            AssistChip(
+                onClick = {},
+                modifier = Modifier.padding(end = 4.dp),
+                label = {
+                    Text(
+                        text = "${session.fullName} • ${session.role.title}",
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
-                }
+                },
+            )
+            IconButton(onClick = onExit) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                    contentDescription = "На экран входа",
+                )
             }
         },
+        colors = TopAppBarDefaults.topAppBarColors(),
     )
 }

@@ -1,9 +1,7 @@
 package ru.demoexam.template.ui.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,22 +19,21 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.Image
 import ru.demoexam.template.model.ProductListItem
-import ru.demoexam.template.util.ImageStorage
 import ru.demoexam.template.util.toCurrencyText
 import ru.demoexam.template.util.toPercentText
 import java.math.BigDecimal
+
+private val DiscountHighlightColor = Color(0xFF2E8B57)
+private val OutOfStockHighlightColor = Color(0xFFADD8E6)
 
 @Composable
 fun ProductCard(
@@ -46,13 +43,14 @@ fun ProductCard(
     onDelete: () -> Unit,
 ) {
     val backgroundColor = when {
-        product.stockQuantity == 0 -> Color(0xFFD6D6D6)
-        product.discountPercent > BigDecimal("25") -> Color(0xFF23E1EF)
+        product.stockQuantity == 0 -> OutOfStockHighlightColor
+        product.discountPercent > BigDecimal("15") -> DiscountHighlightColor
         else -> MaterialTheme.colorScheme.surface
     }
-
-    val imageBitmap = remember(product.imagePath) {
-        ImageStorage.loadStoredBitmap(product.imagePath)
+    val contentColor = when {
+        product.stockQuantity == 0 -> Color(0xFF1A1A1A)
+        product.discountPercent > BigDecimal("15") -> Color.White
+        else -> MaterialTheme.colorScheme.onSurface
     }
 
     Card(
@@ -63,6 +61,7 @@ fun ProductCard(
         colors = CardDefaults.cardColors(
             containerColor = backgroundColor,
         ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         Row(
             modifier = Modifier
@@ -71,56 +70,49 @@ fun ProductCard(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             verticalAlignment = Alignment.Top,
         ) {
-            Box(
-                modifier = Modifier
-                    .width(150.dp)
-                    .height(100.dp)
-                    .clip(CardDefaults.shape)
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                contentAlignment = Alignment.Center,
-            ) {
-                if (imageBitmap != null) {
-                    Image(
-                        bitmap = imageBitmap,
-                        contentDescription = product.name,
-                        modifier = Modifier.fillMaxWidth().height(100.dp),
-                        contentScale = ContentScale.Crop,
-                    )
-                } else {
-                    Image(
-                        painter = painterResource("assets/picture.svg"),
-                        contentDescription = "Нет изображения",
-                        modifier = Modifier.fillMaxWidth().height(100.dp),
-                        contentScale = ContentScale.Crop,
-                    )
-                }
-            }
+            ProductImage(
+                imagePath = product.imagePath,
+                contentDescription = product.name,
+                modifier = Modifier.width(150.dp),
+            )
 
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
                 Text(
-                    text = "${product.name}  •  #${product.id}",
+                    text = product.name,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
+                    color = contentColor,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                 )
-                Text("Категория: ${product.categoryName}")
-                Text("Производитель: ${product.manufacturerName}")
-                Text("Поставщик: ${product.supplierName}")
-                Text("Единица измерения: ${product.unitName}")
+                Text(
+                    text = "№ ${product.id}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = contentColor.copy(alpha = 0.85f),
+                )
+                Text("Категория: ${product.categoryName}", color = contentColor)
+                Text("Производитель: ${product.manufacturerName}", color = contentColor)
+                Text("Поставщик: ${product.supplierName}", color = contentColor)
+                Text("Единица измерения: ${product.unitName}", color = contentColor)
                 Text(
                     text = product.description,
                     style = MaterialTheme.typography.bodySmall,
+                    color = contentColor.copy(alpha = 0.9f),
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
 
             Column(
+                modifier = Modifier.width(160.dp),
                 horizontalAlignment = Alignment.End,
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                Text("Остаток: ${product.stockQuantity}")
-                Text("Скидка: ${product.discountPercent.toPercentText()}")
+                Text("Остаток: ${product.stockQuantity}", color = contentColor)
+                Text("Скидка: ${product.discountPercent.toPercentText()}", color = contentColor)
 
                 if (product.discountPercent > BigDecimal.ZERO) {
                     Text(
@@ -130,12 +122,13 @@ fun ProductCard(
                     )
                     Text(
                         text = product.finalPrice.toCurrencyText(),
-                        color = MaterialTheme.colorScheme.onSurface,
+                        color = contentColor,
                         fontWeight = FontWeight.Bold,
                     )
                 } else {
                     Text(
                         text = product.price.toCurrencyText(),
+                        color = contentColor,
                         fontWeight = FontWeight.Bold,
                     )
                 }

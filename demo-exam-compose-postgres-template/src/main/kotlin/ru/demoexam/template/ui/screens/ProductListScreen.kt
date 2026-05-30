@@ -1,15 +1,19 @@
 package ru.demoexam.template.ui.screens
 
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -18,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ru.demoexam.template.model.DiscountFilter
@@ -74,83 +79,97 @@ fun ProductListScreen(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text(
-                    text = "Список товаров",
-                    style = MaterialTheme.typography.headlineMedium,
-                )
-                Text("Найдено записей: ${products.size}")
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = onRefresh) {
-                    Text("Обновить")
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(
+                        text = "Список товаров",
+                        style = MaterialTheme.typography.headlineMedium,
+                    )
+                    Text("Найдено записей: ${products.size}")
                 }
-                if (session.role.canViewOrders) {
-                    Button(onClick = onOpenOrders) {
-                        Text("Заказы")
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(onClick = onRefresh) {
+                        Text("Обновить")
                     }
-                }
-                if (session.role.canManageProducts) {
-                    Button(onClick = onAddProduct) {
-                        Text("Добавить товар")
+                    if (session.role.canViewOrders) {
+                        Button(onClick = onOpenOrders) {
+                            Text("Заказы")
+                        }
+                    }
+                    if (session.role.canManageProducts) {
+                        Button(onClick = onAddProduct) {
+                            Text("Добавить товар")
+                        }
                     }
                 }
             }
         }
 
         if (session.role.canSearchProducts) {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                OutlinedTextField(
-                    value = filter.searchText,
-                    onValueChange = { onFilterChange(filter.copy(searchText = it)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Поиск по товарам") },
-                    singleLine = true,
-                )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    OptionSelector(
-                        label = "Фильтр по скидке",
-                        selectedItem = filter.discountFilter,
-                        items = DiscountFilter.entries,
-                        itemText = { it.title },
-                        onSelected = { onFilterChange(filter.copy(discountFilter = it)) },
-                        modifier = Modifier.weight(1f),
+                    OutlinedTextField(
+                        value = filter.searchText,
+                        onValueChange = { onFilterChange(filter.copy(searchText = it)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text("Поиск по товарам") },
+                        singleLine = true,
                     )
-                    OptionSelector(
-                        label = "Поле сортировки",
-                        selectedItem = filter.sortField,
-                        items = SortField.entries,
-                        itemText = { it.title },
-                        onSelected = { onFilterChange(filter.copy(sortField = it)) },
-                        modifier = Modifier.weight(1f),
-                    )
-                    OptionSelector(
-                        label = "Направление",
-                        selectedItem = filter.sortDirection,
-                        items = SortDirection.entries,
-                        itemText = { it.title },
-                        onSelected = { onFilterChange(filter.copy(sortDirection = it)) },
-                        modifier = Modifier.weight(1f),
-                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        OptionSelector(
+                            label = "Фильтр по скидке",
+                            selectedItem = filter.discountFilter,
+                            items = DiscountFilter.entries,
+                            itemText = { it.title },
+                            onSelected = { onFilterChange(filter.copy(discountFilter = it)) },
+                            modifier = Modifier.widthIn(min = 220.dp),
+                        )
+                        OptionSelector(
+                            label = "Поле сортировки",
+                            selectedItem = filter.sortField,
+                            items = SortField.entries,
+                            itemText = { it.title },
+                            onSelected = { onFilterChange(filter.copy(sortField = it)) },
+                            modifier = Modifier.widthIn(min = 220.dp),
+                        )
+                        OptionSelector(
+                            label = "Направление",
+                            selectedItem = filter.sortDirection,
+                            items = SortDirection.entries,
+                            itemText = { it.title },
+                            onSelected = { onFilterChange(filter.copy(sortDirection = it)) },
+                            modifier = Modifier.widthIn(min = 220.dp),
+                        )
+                    }
                 }
             }
         }
 
         if (products.isEmpty()) {
-            Text(
-                text = "Список товаров пуст.",
-                style = MaterialTheme.typography.bodyLarge,
-            )
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    modifier = Modifier.padding(16.dp),
+                    text = "Список товаров пуст.",
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+            }
         } else {
             LazyColumn(
                 modifier = Modifier

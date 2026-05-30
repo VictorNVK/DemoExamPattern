@@ -1,0 +1,11 @@
+.gradle/
+.idea/
+build/
+out/
+*.iml
+storage/database/*
+!storage/database/.gitkeep
+storage/images/*
+!storage/images/.gitkeep
+storage/backend.pid
+storage/backend.log

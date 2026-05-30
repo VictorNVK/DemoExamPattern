@@ -25,10 +25,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import ru.demoexam.template.model.LookupItem
 import ru.demoexam.template.model.ProductEditorPayload
 import ru.demoexam.template.model.ProductFormModel
-import ru.demoexam.template.ui.components.LookupSelector
+import ru.demoexam.template.ui.components.StringSelector
 import ru.demoexam.template.util.ImageStorage
 import java.io.File
 import javax.swing.JFileChooser
@@ -87,18 +86,18 @@ fun ProductEditorScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    LookupSelector(
+                    StringSelector(
                         label = "Категория",
-                        selectedItem = payload.categories.findById(form.categoryId),
+                        selectedValue = form.category,
                         items = payload.categories,
-                        onSelected = { form = form.copy(categoryId = it.id) },
+                        onSelected = { form = form.copy(category = it) },
                         modifier = Modifier.weight(1f),
                     )
-                    LookupSelector(
+                    StringSelector(
                         label = "Производитель",
-                        selectedItem = payload.manufacturers.findById(form.manufacturerId),
+                        selectedValue = form.manufacturer,
                         items = payload.manufacturers,
-                        onSelected = { form = form.copy(manufacturerId = it.id) },
+                        onSelected = { form = form.copy(manufacturer = it) },
                         modifier = Modifier.weight(1f),
                     )
                 }
@@ -106,18 +105,18 @@ fun ProductEditorScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    LookupSelector(
+                    StringSelector(
                         label = "Поставщик",
-                        selectedItem = payload.suppliers.findById(form.supplierId),
+                        selectedValue = form.supplier,
                         items = payload.suppliers,
-                        onSelected = { form = form.copy(supplierId = it.id) },
+                        onSelected = { form = form.copy(supplier = it) },
                         modifier = Modifier.weight(1f),
                     )
-                    LookupSelector(
+                    StringSelector(
                         label = "Единица измерения",
-                        selectedItem = payload.units.findById(form.unitId),
+                        selectedValue = form.unit,
                         items = payload.units,
-                        onSelected = { form = form.copy(unitId = it.id) },
+                        onSelected = { form = form.copy(unit = it) },
                         modifier = Modifier.weight(1f),
                     )
                 }
@@ -156,7 +155,7 @@ fun ProductEditorScreen(
                 }
 
                 Text(
-                    text = "Изображение товара будет сохранено в папку приложения `storage/images` и автоматически приведено к размеру 300x200.",
+                    text = "Изображение сохраняется на сервере и приводится к размеру 300x200.",
                     style = MaterialTheme.typography.bodySmall,
                 )
 
@@ -174,7 +173,7 @@ fun ProductEditorScreen(
                         )
                     } else {
                         Image(
-                            painter = painterResource("assets/picture.svg"),
+                            painter = painterResource("assets/picture.png"),
                             contentDescription = "Нет изображения",
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Fit,
@@ -211,19 +210,15 @@ fun ProductEditorScreen(
     }
 }
 
-private fun List<LookupItem>.findById(id: Int?): LookupItem? {
-    return firstOrNull { it.id == id }
-}
-
 private fun ru.demoexam.template.model.ProductDraft.toFormModel(): ProductFormModel {
     return ProductFormModel(
         id = id,
         name = name,
-        categoryId = categoryId,
+        category = category,
         description = description,
-        manufacturerId = manufacturerId,
-        supplierId = supplierId,
-        unitId = unitId,
+        manufacturer = manufacturer,
+        supplier = supplier,
+        unit = unit,
         priceText = price?.toPlainString().orEmpty(),
         stockQuantityText = stockQuantity?.toString().orEmpty(),
         discountText = discountPercent?.toPlainString().orEmpty(),

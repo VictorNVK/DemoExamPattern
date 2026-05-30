@@ -1,146 +1,57 @@
-# Шаблон для демоэкзамена: Kotlin Compose Desktop + Room
+# Compose Desktop Client
 
-Это стартовый шаблон desktop-приложения под демоэкзамен на `Kotlin Compose Desktop` с локальной базой `SQLite` через `Room`.
-Главная цель шаблона: быстро делать экзаменационные CRUD-задачи без PostgreSQL, Docker и ручного JDBC-слоя.
+Desktop-клиент демоэкзамена «Книжный магазин». Работает через REST API backend.
 
-Подробная инструкция по адаптации под разные варианты находится в [README_VARIANTS.md](README_VARIANTS.md).
-Команды для Linux вынесены в [LINUX_INSTALL_COMMANDS.txt](LINUX_INSTALL_COMMANDS.txt).
-
-## Что уже есть
-
-- `Compose Desktop` приложение на Kotlin
-- локальная БД `SQLite`
-- `Room` как ORM-слой
-- роли: гость, клиент, менеджер, администратор
-- экран входа
-- экран списка товаров
-- поиск, фильтрация и сортировка
-- форма добавления и редактирования товара
-- удаление товара с проверкой связей
-- экран заказов как основа под дальнейший CRUD
-- импорт из `.xlsx`
-- папка `storage/images` для изображений товаров
-- папки `docs/` и `imports/` для материалов экзамена
-
-## Что изменилось
-
-- PostgreSQL удален
-- Docker больше не нужен
-- `Flyway`, `HikariCP` и `PostgreSQL JDBC` удалены
-- данные хранятся в локальном файле SQLite
-- структура БД описывается через `Room Entity/DAO/Relation`
-
-## Где лежит база
-
-После первого запуска создается файл:
-
-- `storage/database/book_store_exam.db`
-
-Имя файла можно поменять в `src/main/resources/application.properties` через `db.file_name`.
+> Полная документация: [../README.md](../README.md) · [Развёртывание](../docs/DEPLOYMENT.md) · [Модули ТЗ](../docs/)
 
 ## Быстрый старт
 
-### 1. Собрать проект
-
 ```powershell
-.\gradlew.bat compileKotlin
-```
-
-### 2. Запустить приложение
-
-```powershell
+# Сначала запустите backend (см. demo-exam-spring-backend)
 .\gradlew.bat run
 ```
 
-### 3. Тестовые учетные записи
+## Конфигурация API
 
-- `client / client`
-- `manager / manager`
-- `admin / admin`
+`src/main/resources/application.properties`:
 
-При первом запуске база и стартовые данные создаются автоматически.
+```properties
+app.title=Book Store Demo Template
+app.company_name=Book Store
+api.base_url=http://localhost:8080
 
-## Полезные команды
-
-```powershell
-.\gradlew.bat compileKotlin
-.\gradlew.bat test
-.\gradlew.bat run
-.\gradlew.bat importXlsx -PimportDir="C:\path\to\xlsx"
-.\gradlew.bat packageDistributionForCurrentOS
+api.endpoint.auth.login=/api/auth/login
+api.endpoint.products=/api/products
+api.endpoint.products.options=/api/products/options
+api.endpoint.products.next_id=/api/products/next-id
+api.endpoint.orders=/api/orders
+api.endpoint.files.images=/api/files/images
 ```
 
-## Основные каталоги
+Класс `config/BackendApiConfig.kt` собирает полные URL.  
+Переопределение через env: `API_BASE_URL`, `API_ENDPOINT_PRODUCTS`, …
 
-- `src/main/kotlin` — основной код
-- `src/main/kotlin/ru/demoexam/template/data/local` — `Room` сущности, связи и DAO
-- `src/main/resources/assets` — логотип и заглушка изображения
-- `imports` — входные файлы экзамена
-- `docs/er` — ER-диаграммы
-- `docs/algorithms` — блок-схемы
-- `docs/screenshots` — скриншоты работы
-- `storage/database` — файл SQLite базы
-- `storage/images` — изображения товаров
+## Структура
 
-## Импорт из XLSX
-
-Шаблон импортирует типовые экзаменационные файлы:
-
-- `Tovar.xlsx`
-- `user_import.xlsx`
-- `Заказ_import.xlsx`
-- `Пункты выдачи_import.xlsx`
-
-Запуск через Gradle:
-
-```powershell
-.\gradlew.bat importXlsx -PimportDir="C:\Users\Victor\Desktop\Демо экзамен файлы"
+```
+app/          AppState, навигация
+api/          BackendClient (Ktor)
+config/       AppConfig, BackendApiConfig
+data/         репозитории (REST)
+ui/screens/   Login, Products, Editor, Orders
+model/        UserRole, Product, Order
 ```
 
-Запуск через PowerShell:
+## Роли (UI)
 
-```powershell
-.\scripts\import-xlsx.ps1
-.\scripts\import-xlsx.ps1 -SourceDir "C:\Users\Victor\Desktop\Демо экзамен файлы"
-```
+| Роль | Каталог | Поиск | Заказы | CRUD |
+|------|---------|-------|--------|------|
+| Гость / Client | ✓ | — | — | — |
+| Manager | ✓ | ✓ | ✓ | — |
+| Admin | ✓ | ✓ | ✓ | ✓ |
 
-Что делает импортёр:
+Подробнее: [docs/MODULE_2.md](../docs/MODULE_2.md) … [MODULE_4.md](../docs/MODULE_4.md)
 
-- очищает предметные таблицы перед новой загрузкой
-- импортирует пользователей, товары, пункты выдачи и заказы
-- автоматически добавляет недостающие справочники
-- копирует изображения товаров в `storage/images`
-- сохраняет путь к изображению в БД
-- разбирает состав заказа из ячейки Excel
+## Артефакты для экзамена
 
-## Конфигурация
-
-Настройки читаются из `src/main/resources/application.properties`.
-Поддерживаются параметры:
-
-- `app.title`
-- `app.company_name`
-- `db.file_name`
-
-Их можно переопределять переменными окружения:
-
-- `APP_TITLE`
-- `APP_COMPANY_NAME`
-- `DB_FILE_NAME`
-
-## Room и SQL
-
-Шаблон специально переведен на `Room`, чтобы основную работу делать без ручного SQL-слоя:
-
-- таблицы описываются через `@Entity`
-- связи задаются через `@ForeignKey` и `@Relation`
-- вставка, обновление и удаление идут через `@Insert`, `@Update`, `@Delete`
-- выборки описаны в `@Dao`
-
-Отдельный JDBC-слой и SQL-миграции больше не нужны.
-
-## Замечания
-
-- Для сборки и запуска лучше использовать `JDK 17`.
-- Пароли в шаблоне хранятся в открытом виде, потому что это учебная заготовка.
-- Если структура варианта изменилась, сначала меняй `Entity` и `DAO`, потом репозитории, потом UI.
+`docs/er/`, `docs/screenshots/`, `docs/algorithms/` — см. [docs/README.md](docs/README.md)

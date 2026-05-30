@@ -4,13 +4,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.runBlocking
+import ru.demoexam.template.api.BackendClientProvider
 import ru.demoexam.template.config.AppConfig
 import ru.demoexam.template.config.AppConfigLoader
-import ru.demoexam.template.data.AppDatabaseProvider
 import ru.demoexam.template.data.AuthRepository
 import ru.demoexam.template.data.OrderRepository
+import ru.demoexam.template.data.ProductOptionsRepository
 import ru.demoexam.template.data.ProductRepository
-import ru.demoexam.template.data.ReferenceRepository
 import ru.demoexam.template.model.DeleteProductResult
 import ru.demoexam.template.model.MessageKind
 import ru.demoexam.template.model.OrderSummary
@@ -22,18 +23,17 @@ import ru.demoexam.template.model.ProductListItem
 import ru.demoexam.template.model.UiMessage
 import ru.demoexam.template.model.UserSession
 import ru.demoexam.template.navigation.AppScreen
-import ru.demoexam.template.util.ImageStorage
 import ru.demoexam.template.util.ProductValidation
-import ru.demoexam.template.util.AppDirectories
 
 class AppState(
     private val authRepository: AuthRepository = AuthRepository(),
-    private val referenceRepository: ReferenceRepository = ReferenceRepository(),
+    private val productOptionsRepository: ProductOptionsRepository = ProductOptionsRepository(),
     private val productRepository: ProductRepository = ProductRepository(),
     private val orderRepository: OrderRepository = OrderRepository(),
 ) {
     private val backStack = mutableStateListOf<AppScreen>()
     private var appConfig: AppConfig? = null
+    private var editingExistingProduct = false
 
     var isInitialized by mutableStateOf(false)
         private set
@@ -85,13 +85,15 @@ class AppState(
 
         runCatching {
             appConfig = AppConfigLoader.load()
-            AppDirectories.ensureCreated()
-            AppDatabaseProvider.initialize(requireNotNull(appConfig))
+            BackendClientProvider.initialize(requireNotNull(appConfig).backendApi)
+            runBlocking {
+                BackendClientProvider.getClient().checkHealth()
+            }
             products = productRepository.findAll(ProductFilter())
             isInitialized = true
         }.onFailure { throwable ->
-            AppDatabaseProvider.close()
-            startupError = throwable.message ?: "Не удалось инициализировать приложение."
+            BackendClientProvider.close()
+            startupError = throwable.message ?: "Не удалось подключиться к Spring backend."
         }
     }
 
@@ -158,6 +160,7 @@ class AppState(
         backStack.clear()
         editorPayload = null
         productFilter = ProductFilter()
+        BackendClientProvider.getClient().clearAuth()
     }
 
     fun goBack() {
@@ -221,19 +224,14 @@ class AppState(
         }
 
         runCatching {
+            editingExistingProduct = productId != null
             val draft = if (productId == null) {
                 ProductDraft(id = productRepository.nextId())
             } else {
                 productRepository.findById(productId) ?: error("Товар не найден.")
             }
 
-            editorPayload = ProductEditorPayload(
-                draft = draft,
-                categories = referenceRepository.loadCategories(),
-                manufacturers = referenceRepository.loadManufacturers(),
-                suppliers = referenceRepository.loadSuppliers(),
-                units = referenceRepository.loadUnits(),
-            )
+            editorPayload = productOptionsRepository.loadEditorPayload(draft)
             navigateTo(AppScreen.ProductEditor(productId))
         }.onFailure { throwable ->
             showMessage(
@@ -260,31 +258,26 @@ class AppState(
             val discount = ProductValidation.parseDecimal(form.discountText) ?: error("Скидка указана неверно.")
             val stock = form.stockQuantityText.trim().toIntOrNull() ?: error("Количество указано неверно.")
 
-            val storedImagePath = if (form.selectedImageSourcePath != null) {
-                ImageStorage.storeProductImage(
-                    sourcePath = form.selectedImageSourcePath,
-                    existingStoredPath = form.existingImagePath,
-                    productId = form.id,
-                )
-            } else {
-                form.existingImagePath
-            }
-
             val draft = ProductDraft(
                 id = form.id,
                 name = form.name.trim(),
-                categoryId = form.categoryId,
+                category = form.category.trim(),
                 description = form.description.trim(),
-                manufacturerId = form.manufacturerId,
-                supplierId = form.supplierId,
-                unitId = form.unitId,
+                manufacturer = form.manufacturer.trim(),
+                supplier = form.supplier.trim(),
+                unit = form.unit.trim(),
                 price = price,
                 stockQuantity = stock,
                 discountPercent = discount,
-                imagePath = storedImagePath,
+                imagePath = form.existingImagePath,
             )
 
-            productRepository.save(draft)
+            productRepository.saveWithImage(
+                product = draft,
+                isNew = !editingExistingProduct,
+                imageSourcePath = form.selectedImageSourcePath,
+            )
+
             editorPayload = null
             refreshProducts()
             goBack()
@@ -315,7 +308,6 @@ class AppState(
         runCatching {
             when (productRepository.delete(product.id)) {
                 DeleteProductResult.DELETED -> {
-                    ImageStorage.deleteStoredImage(product.imagePath)
                     refreshProducts()
                     showMessage(
                         title = "Удаление выполнено",
@@ -350,7 +342,7 @@ class AppState(
     }
 
     fun shutdown() {
-        AppDatabaseProvider.close()
+        BackendClientProvider.close()
     }
 
     private fun refreshOrders() {

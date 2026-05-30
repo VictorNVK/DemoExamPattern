@@ -1,10 +1,7 @@
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
     kotlin("jvm") version "2.2.21"
-    id("com.google.devtools.ksp") version "2.2.21-2.0.4"
     id("org.jetbrains.kotlin.plugin.compose") version "2.2.21"
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.2.21"
     id("org.jetbrains.compose") version "1.10.3"
 }
 
@@ -23,11 +20,11 @@ dependencies {
     implementation(compose.materialIconsExtended)
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
-    implementation("org.apache.poi:poi-ooxml:5.4.1")
-    implementation("androidx.room:room-runtime:2.8.4")
-    implementation("androidx.sqlite:sqlite-bundled:2.6.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
+    implementation("io.ktor:ktor-client-cio:3.1.3")
+    implementation("io.ktor:ktor-client-content-negotiation:3.1.3")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:3.1.3")
     implementation("ch.qos.logback:logback-classic:1.5.21")
-    ksp("androidx.room:room-compiler:2.8.4")
 
     testImplementation(kotlin("test"))
 }
@@ -39,7 +36,7 @@ java {
 
 kotlin {
     compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_17)
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     }
 }
 
@@ -47,27 +44,16 @@ tasks.test {
     useJUnitPlatform()
 }
 
-tasks.register<JavaExec>("importXlsx") {
-    group = "application"
-    description = "Imports demo exam XLSX files into local Room/SQLite database"
-    classpath = sourceSets["main"].runtimeClasspath
-    mainClass.set("ru.demoexam.template.importer.XlsxImportMainKt")
-
-    if (project.hasProperty("importDir")) {
-        args(project.property("importDir").toString())
-    }
-}
-
 compose.desktop {
     application {
         mainClass = "ru.demoexam.template.MainKt"
 
         nativeDistributions {
-            targetFormats(TargetFormat.Exe, TargetFormat.Msi, TargetFormat.Dmg, TargetFormat.Deb)
+            targetFormats(org.jetbrains.compose.desktop.application.dsl.TargetFormat.Exe, org.jetbrains.compose.desktop.application.dsl.TargetFormat.Msi)
             packageName = "DemoExamTemplate"
             packageVersion = "1.0.0"
             vendor = "Demo Exam Template"
-            description = "Template for demo exam desktop applications on Compose Desktop and Room"
+            description = "Compose Desktop client for demo exam Spring backend"
         }
     }
 }

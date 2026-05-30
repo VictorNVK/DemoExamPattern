@@ -10,16 +10,16 @@ object ProductValidation {
         if (form.name.isBlank()) {
             errors += "Укажите наименование товара."
         }
-        if (form.categoryId == null) {
+        if (form.category.isBlank()) {
             errors += "Выберите категорию товара."
         }
-        if (form.manufacturerId == null) {
+        if (form.manufacturer.isBlank()) {
             errors += "Выберите производителя."
         }
-        if (form.supplierId == null) {
+        if (form.supplier.isBlank()) {
             errors += "Выберите поставщика."
         }
-        if (form.unitId == null) {
+        if (form.unit.isBlank()) {
             errors += "Выберите единицу измерения."
         }
 
@@ -60,4 +60,3 @@ object ProductValidation {
         return normalized.toBigDecimalOrNull()
     }
 }
-

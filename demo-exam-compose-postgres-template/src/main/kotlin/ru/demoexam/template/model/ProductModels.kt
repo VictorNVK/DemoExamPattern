@@ -47,11 +47,11 @@ data class ProductListItem(
 data class ProductDraft(
     val id: Int,
     val name: String = "",
-    val categoryId: Int? = null,
+    val category: String = "",
     val description: String = "",
-    val manufacturerId: Int? = null,
-    val supplierId: Int? = null,
-    val unitId: Int? = null,
+    val manufacturer: String = "",
+    val supplier: String = "",
+    val unit: String = "",
     val price: BigDecimal? = null,
     val stockQuantity: Int? = null,
     val discountPercent: BigDecimal? = null,
@@ -61,11 +61,11 @@ data class ProductDraft(
 data class ProductFormModel(
     val id: Int,
     val name: String = "",
-    val categoryId: Int? = null,
+    val category: String = "",
     val description: String = "",
-    val manufacturerId: Int? = null,
-    val supplierId: Int? = null,
-    val unitId: Int? = null,
+    val manufacturer: String = "",
+    val supplier: String = "",
+    val unit: String = "",
     val priceText: String = "",
     val stockQuantityText: String = "",
     val discountText: String = "",
@@ -75,10 +75,10 @@ data class ProductFormModel(
 
 data class ProductEditorPayload(
     val draft: ProductDraft,
-    val categories: List<LookupItem>,
-    val manufacturers: List<LookupItem>,
-    val suppliers: List<LookupItem>,
-    val units: List<LookupItem>,
+    val categories: List<String>,
+    val manufacturers: List<String>,
+    val suppliers: List<String>,
+    val units: List<String>,
 )
 
 enum class DeleteProductResult {
@@ -86,4 +86,3 @@ enum class DeleteProductResult {
     LINKED_TO_ORDER,
     NOT_FOUND,
 }
-
