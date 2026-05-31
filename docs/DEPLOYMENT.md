@@ -24,6 +24,19 @@
 | JDK | 21 (backend), 17+ (client) |
 | Python 3 | для загрузки демо-данных (опционально) |
 
+## 2.1. Как поднимается база данных
+
+SQLite **не запускается отдельно** — это файл на диске.
+
+| Шаг | Что происходит |
+|-----|----------------|
+| `bootRun` | Создаются папки `storage/database/`, `storage/images/` |
+| Hibernate (`ddl-auto=update`) | Создаёт/обновляет `storage/database/book_store_exam.db` и таблицы |
+| `python scripts/seed_db.py` | Заполняет users, products, orders (демо-данные) |
+
+Порт backend по умолчанию: **8082** (`server.port` в `application.properties`).  
+Клиент: `api.base_url=http://localhost:8082`.
+
 ## 3. Windows — установка и запуск
 
 ### 3.1. Установка JDK 21
@@ -64,13 +77,14 @@ cd demo-exam-spring-backend
 Started DemoExamBackendApplication
 ```
 
-Swagger: http://localhost:8080/swagger-ui
+Swagger: http://localhost:8082/api/v3/swagger-ui/index.html
 
-> **Ошибка «Port 8080 was already in use»** — backend уже запущен. Либо используйте его, либо остановите:
+> **Ошибка «Port … was already in use»** — backend уже запущен. Либо используйте его, либо остановите:
 > ```powershell
-> netstat -ano | findstr :8080
+> netstat -ano | findstr :8082
 > taskkill /PID <номер_процесса> /F
 > ```
+> Или из корня репозитория: `.\scripts\windows\stop-backend.ps1`
 
 ### 3.5. Загрузка демо-данных в SQLite
 
@@ -99,21 +113,21 @@ cd demo-exam-compose-postgres-template
 .\gradlew.bat run
 ```
 
-### 3.7. Настройка URL backend (если не localhost:8080)
+### 3.7. Настройка URL backend (если не localhost:8082)
 
 **Backend** — `demo-exam-spring-backend/src/main/resources/application.properties`:
 ```properties
-server.port=8080
+server.port=8082
 ```
 
 **Client** — `demo-exam-compose-postgres-template/src/main/resources/application.properties`:
 ```properties
-api.base_url=http://localhost:8080
+api.base_url=http://localhost:8082
 ```
 
 Или переменная окружения:
 ```powershell
-$env:API_BASE_URL="http://192.168.1.10:8080"
+$env:API_BASE_URL="http://192.168.1.10:8082"
 .\gradlew.bat run
 ```
 
@@ -169,7 +183,7 @@ cd demo-exam-compose-postgres-template
 
 ### 5.1. Swagger
 
-1. http://localhost:8080/swagger-ui
+1. http://localhost:8082/api/v3/swagger-ui/index.html
 2. `POST /api/auth/login` → body: `{"login":"admin","password":"admin"}`
 3. **Authorize** → `Bearer {token}`
 4. `GET /api/products`, `GET /api/orders`
@@ -250,7 +264,7 @@ demo-exam-spring-backend/
 
 | Переменная | Свойство | По умолчанию |
 |------------|----------|--------------|
-| — | `server.port` | 8080 |
+| — | `server.port` | 8082 |
 | — | `app.storage-root` | storage |
 
 ### Client
@@ -259,7 +273,7 @@ demo-exam-spring-backend/
 |------------|----------|--------------|
 | `APP_TITLE` | app.title | Book Store Demo Template |
 | `APP_COMPANY_NAME` | app.company_name | Book Store |
-| `API_BASE_URL` | api.base_url | http://localhost:8080 |
+| `API_BASE_URL` | api.base_url | http://localhost:8082 |
 | `API_ENDPOINT_PRODUCTS` | api.endpoint.products | /api/products |
 
 Полный список эндпоинтов: `BackendApiConfig.kt`.
@@ -268,13 +282,42 @@ demo-exam-spring-backend/
 
 | Проблема | Решение |
 |----------|---------|
-| Port 8080 already in use | Остановить старый java-процесс или сменить `server.port` |
+| Порт backend занят | `netstat -ano | findstr :8082` или `.\scripts\windows\stop-backend.ps1` |
 | Клиент не подключается | Проверить `api.base_url`, backend запущен |
 | Пустой каталог | Выполнить `seed_db.py` |
 | 401 Unauthorized | Войти через клиент или получить token в Swagger |
 | 403 Forbidden | Неверная роль (CRUD — только admin) |
 | Нет фото | Файл в `storage/images/`, путь в `products.image_path` |
 | Gradle медленный | Первый запуск скачивает зависимости — это нормально |
+| Database is locked (IntelliJ) | Остановите `bootRun` — SQLite занят backend |
+
+## 10.1. Просмотр SQLite в IntelliJ IDEA
+
+Файл БД:
+```
+demo-exam-spring-backend/storage/database/book_store_exam.db
+```
+
+### IntelliJ IDEA Ultimate
+
+1. **View → Tool Windows → Database**
+2. **+ → Data Source → SQLite**
+3. **File** — укажите путь к `book_store_exam.db`
+4. **Download missing driver files** (если предложит)
+5. **Test Connection → OK**
+6. Таблицы: `users`, `products`, `orders`
+
+### IntelliJ IDEA Community
+
+Плагин **Database Navigator** или внешний **DB Browser for SQLite**.
+
+### JDBC URL (если нужен)
+
+```
+jdbc:sqlite:C:/.../demo-exam-spring-backend/storage/database/book_store_exam.db
+```
+
+> Пока работает `bootRun`, файл может быть заблокирован — для просмотра/редактирования в IDEA остановите backend.
 
 ## 11. Документация по модулям ТЗ
 

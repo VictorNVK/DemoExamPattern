@@ -9,5 +9,5 @@ source "${SCRIPT_DIR}/common.sh"
 
 start_backend_background
 log "Лог: ${BACKEND_LOG_FILE}"
-log "Swagger: ${BACKEND_URL}/swagger-ui"
+log "Swagger: ${BACKEND_URL}/api/v3/swagger-ui/index.html"
 print_credentials

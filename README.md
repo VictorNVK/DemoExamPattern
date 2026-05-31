@@ -57,9 +57,24 @@ cd demo-exam-spring-backend
 python scripts\seed_db.py
 ```
 
+**Остановка** (задачи `gradlew stop` нет — используйте скрипты из **корня репозитория**):
+```powershell
+.\scripts\windows\stop-backend.ps1
+.\scripts\windows\stop-client.ps1
+.\scripts\windows\stop-all.ps1
+```
+Или `Ctrl+C` в терминале, где запущен `bootRun` / `run`.
+
 ### Linux
 
 См. [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) и [scripts/linux/README.md](scripts/linux/README.md).
+
+Остановка:
+```bash
+./scripts/linux/stop-backend.sh
+./scripts/linux/stop-client.sh
+./scripts/linux/stop-all.sh
+```
 
 ## Учётные записи (после seed)
 
@@ -73,8 +88,8 @@ python scripts\seed_db.py
 
 | Ресурс | URL |
 |--------|-----|
-| Swagger UI | http://localhost:8080/swagger-ui |
-| OpenAPI JSON | http://localhost:8080/v3/api-docs |
+| Swagger UI | http://localhost:8082/api/v3/swagger-ui/index.html |
+| OpenAPI JSON | http://localhost:8082/api/v3/api-docs |
 | Полное развёртывание | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) |
 | Backend (детали API) | [demo-exam-spring-backend/README.md](demo-exam-spring-backend/README.md) |
 | Client (конфиг API) | [demo-exam-compose-postgres-template/README.md](demo-exam-compose-postgres-template/README.md) |

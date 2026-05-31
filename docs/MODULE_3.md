@@ -78,5 +78,5 @@
 
 ## Swagger
 
-Тестирование API без клиента: http://localhost:8080/swagger-ui  
+Тестирование API без клиента: http://localhost:8082/api/v3/swagger-ui/index.html  
 Авторизация: **Authorize** → `Bearer {token}` после `POST /api/auth/login`.

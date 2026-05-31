@@ -9,13 +9,27 @@ ROOT_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 BACKEND_DIR="${ROOT_DIR}/demo-exam-spring-backend"
 CLIENT_DIR="${ROOT_DIR}/demo-exam-compose-postgres-template"
 BACKEND_DB="${BACKEND_DIR}/storage/database/book_store_exam.db"
-BACKEND_PORT="${BACKEND_PORT:-8080}"
+BACKEND_PORT="${BACKEND_PORT:-8082}"
 BACKEND_URL="http://localhost:${BACKEND_PORT}"
 BACKEND_PID_FILE="${BACKEND_DIR}/storage/backend.pid"
 BACKEND_LOG_FILE="${BACKEND_DIR}/storage/backend.log"
 
 log() {
   printf '[%s] %s\n' "$(date '+%H:%M:%S')" "$*"
+}
+
+read_backend_port() {
+  local props="${BACKEND_DIR}/src/main/resources/application.properties"
+  if [[ ! -f "$props" ]]; then
+    return 0
+  fi
+
+  local port
+  port="$(grep -E '^[[:space:]]*server\.port[[:space:]]*=' "$props" | tail -n1 | sed -E 's/^[^=]*=[[:space:]]*([0-9]+).*/\1/')"
+  if [[ -n "$port" ]]; then
+    BACKEND_PORT="$port"
+    BACKEND_URL="http://localhost:${BACKEND_PORT}"
+  fi
 }
 
 die() {
@@ -54,7 +68,7 @@ is_backend_running() {
   fi
 
   if command -v curl >/dev/null 2>&1; then
-    curl -fsS "${BACKEND_URL}/v3/api-docs" >/dev/null 2>&1
+    curl -fsS "${BACKEND_URL}/api/v3/api-docs" >/dev/null 2>&1
     return $?
   fi
 
@@ -67,7 +81,7 @@ wait_for_backend() {
 
   log "Ожидание backend на ${BACKEND_URL} ..."
   for ((i = 1; i <= attempts; i++)); do
-    if curl -fsS "${BACKEND_URL}/v3/api-docs" >/dev/null 2>&1; then
+    if curl -fsS "${BACKEND_URL}/api/v3/api-docs" >/dev/null 2>&1; then
       log "Backend доступен."
       return 0
     fi
@@ -78,11 +92,13 @@ wait_for_backend() {
 }
 
 stop_backend() {
+  read_backend_port
+
   if [[ -f "$BACKEND_PID_FILE" ]]; then
     local pid
     pid="$(cat "$BACKEND_PID_FILE")"
     if kill -0 "$pid" 2>/dev/null; then
-      log "Останавливаю backend (PID ${pid}) ..."
+      log "Stopping backend (PID ${pid}) ..."
       kill "$pid" 2>/dev/null || true
       sleep 2
       kill -9 "$pid" 2>/dev/null || true
@@ -92,7 +108,31 @@ stop_backend() {
 
   if command -v fuser >/dev/null 2>&1; then
     fuser -k "${BACKEND_PORT}/tcp" >/dev/null 2>&1 || true
+  elif command -v lsof >/dev/null 2>&1; then
+    local pids
+    pids="$(lsof -ti tcp:"${BACKEND_PORT}" 2>/dev/null || true)"
+    if [[ -n "$pids" ]]; then
+      log "Stopping backend on port ${BACKEND_PORT} ..."
+      kill $pids 2>/dev/null || true
+    fi
   fi
+
+  if command -v pkill >/dev/null 2>&1; then
+    pkill -f "demo-exam-spring-backend" >/dev/null 2>&1 || true
+    pkill -f "DemoExamBackendApplication" >/dev/null 2>&1 || true
+  fi
+}
+
+stop_client() {
+  if command -v pkill >/dev/null 2>&1; then
+    pkill -f "demo-exam-compose-postgres-template" >/dev/null 2>&1 || true
+    pkill -f "ru.demoexam.template.MainKt" >/dev/null 2>&1 || true
+    pkill -f "DemoExamTemplate" >/dev/null 2>&1 || true
+    log "Client stop signal sent."
+    return 0
+  fi
+
+  log "pkill not found; client must be closed manually."
 }
 
 start_backend_background() {
@@ -124,7 +164,7 @@ print_credentials() {
   admin   / admin    — администратор
 
 Swagger UI:
-  http://localhost:8080/swagger-ui
+  ${BACKEND_URL}/api/v3/swagger-ui/index.html
 
 EOF
 }

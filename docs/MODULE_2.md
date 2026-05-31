@@ -62,7 +62,7 @@ Response: { "token", "userId", "fullName", "role" }
 ```properties
 app.title=Book Store Demo Template
 app.company_name=Book Store
-api.base_url=http://localhost:8080
+api.base_url=http://localhost:8082
 ```
 
 URL эндпоинтов — в `config/BackendApiConfig.kt`.

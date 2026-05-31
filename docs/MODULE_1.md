@@ -111,6 +111,6 @@ python scripts/seed_db.py
 ## Проверка
 
 1. Запустить backend: `.\gradlew.bat bootRun`
-2. Открыть Swagger: http://localhost:8080/swagger-ui
+2. Открыть Swagger: http://localhost:8082/api/v3/swagger-ui/index.html
 3. `GET /api/products` — список товаров из БД
 4. `POST /api/auth/login` — авторизация по данным из `users`

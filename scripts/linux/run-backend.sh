@@ -13,7 +13,7 @@ ensure_storage_dirs
 
 if is_backend_running; then
   log "Backend уже запущен: ${BACKEND_URL}"
-  log "Swagger: ${BACKEND_URL}/swagger-ui"
+  log "Swagger: ${BACKEND_URL}/api/v3/swagger-ui/index.html"
   exit 0
 fi
 

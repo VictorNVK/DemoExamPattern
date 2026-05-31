@@ -18,7 +18,7 @@ Desktop-клиент демоэкзамена «Книжный магазин».
 ```properties
 app.title=Book Store Demo Template
 app.company_name=Book Store
-api.base_url=http://localhost:8080
+api.base_url=http://localhost:8082
 
 api.endpoint.auth.login=/api/auth/login
 api.endpoint.products=/api/products

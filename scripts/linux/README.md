@@ -42,6 +42,8 @@ chmod +x scripts/linux/*.sh
 | `run-backend.sh` | Backend на переднем плане |
 | `run-backend-background.sh` | Backend в фоне |
 | `stop-backend.sh` | Остановка backend |
+| `stop-client.sh` | Остановка клиента |
+| `stop-all.sh` | Остановка backend и клиента |
 | `run-client.sh` | Compose-клиент |
 | `run-all.sh` | Backend (фон) + клиент |
 | `build-all.sh` | Сборка обоих проектов |
@@ -52,7 +54,7 @@ chmod +x scripts/linux/*.sh
 | Переменная | По умолчанию | Описание |
 |------------|--------------|----------|
 | `RESET_DB=1` | — | Удалить БД перед `init-database.sh` |
-| `BACKEND_PORT` | `8080` | Порт backend |
+| `BACKEND_PORT` | `8082` | Порт backend (читается из `application.properties`) |
 | `WAIT_BACKEND=0` | `1` | Не ждать backend в `run-client.sh` |
 
 Пример пересоздания БД:
@@ -65,7 +67,15 @@ RESET_DB=1 ./scripts/linux/init-database.sh
 
 - SQLite: `demo-exam-spring-backend/storage/database/book_store_exam.db`
 - Лог backend: `demo-exam-spring-backend/storage/backend.log`
-- Swagger: http://localhost:8080/swagger-ui
+- Swagger: http://localhost:8082/api/v3/swagger-ui/index.html
+
+## Остановка
+
+```bash
+./scripts/linux/stop-backend.sh
+./scripts/linux/stop-client.sh
+./scripts/linux/stop-all.sh
+```
 
 ## Учётные записи (после seed)
 
