@@ -24,6 +24,7 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2")
     implementation("org.xerial:sqlite-jdbc:3.49.1.0")
     implementation("org.hibernate.orm:hibernate-community-dialects")
+    implementation("org.apache.poi:poi-ooxml:5.4.1")
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")

@@ -24,10 +24,15 @@ public class StoragePaths {
         return storageRoot().resolve("images");
     }
 
+    public Path inputDirectory() {
+        return Path.of(appProperties.inputRoot()).toAbsolutePath().normalize();
+    }
+
     public void ensureCreated() {
         try {
             Files.createDirectories(databaseDirectory());
             Files.createDirectories(imagesDirectory());
+            Files.createDirectories(inputDirectory());
         } catch (Exception exception) {
             throw new IllegalStateException("Не удалось создать каталоги storage.", exception);
         }

@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import ru.demoexam.backend.domain.Order;
 
 public interface OrderRepository extends JpaRepository<Order, Integer> {
@@ -23,12 +22,4 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
     default List<Order> findAllForList() {
         return findAllByOrderByOrderDateDescIdDesc();
     }
-
-    @Query("""
-            SELECT DISTINCT o.pickupAddress
-            FROM Order o
-            WHERE o.pickupAddress IS NOT NULL AND TRIM(o.pickupAddress) <> ''
-            ORDER BY o.pickupAddress
-            """)
-    List<String> findDistinctPickupAddresses();
 }

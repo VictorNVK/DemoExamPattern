@@ -5,6 +5,7 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -82,13 +83,19 @@ public class OrderService {
                     .build());
         }
 
-        List<String> pickupAddresses = orderRepository.findDistinctPickupAddresses();
+        TreeSet<String> pickupAddresses = new TreeSet<>();
+        for (Order order : orderRepository.findAll()) {
+            String pickupAddress = order.getPickupAddress();
+            if (pickupAddress != null && !pickupAddress.trim().isEmpty()) {
+                pickupAddresses.add(pickupAddress.trim());
+            }
+        }
 
         return ResponseEntity.ok(OrderOptionsDto.builder()
                 .managers(managers)
                 .products(products)
                 .statuses(DEFAULT_STATUSES)
-                .pickupAddresses(pickupAddresses)
+                .pickupAddresses(new ArrayList<>(pickupAddresses))
                 .build());
     }
 

@@ -18,6 +18,7 @@ public class DemoExamBackendApplication {
             Path storageRoot = Path.of("storage");
             Files.createDirectories(storageRoot.resolve("database"));
             Files.createDirectories(storageRoot.resolve("images"));
+            Files.createDirectories(Path.of("input"));
         } catch (Exception exception) {
             throw new IllegalStateException("Не удалось создать каталоги storage.", exception);
         }

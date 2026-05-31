@@ -7,6 +7,7 @@ public record AppProperties(
         String title,
         String companyName,
         String storageRoot,
+        String inputRoot,
         String databaseFile
 ) {
     public AppProperties {
@@ -18,6 +19,9 @@ public record AppProperties(
         }
         if (storageRoot == null || storageRoot.isBlank()) {
             storageRoot = "storage";
+        }
+        if (inputRoot == null || inputRoot.isBlank()) {
+            inputRoot = "input";
         }
         if (databaseFile == null || databaseFile.isBlank()) {
             databaseFile = "book_store_exam.db";

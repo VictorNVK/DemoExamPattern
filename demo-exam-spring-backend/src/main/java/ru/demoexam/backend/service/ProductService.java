@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.TreeSet;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,8 +49,12 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public ResponseEntity<ProductFilterOptionsDto> filterOptions() {
+        TreeSet<String> suppliers = new TreeSet<>();
+        for (Product product : productRepository.findAll()) {
+            addDistinctValue(suppliers, product.getSupplier());
+        }
         return ResponseEntity.ok(ProductFilterOptionsDto.builder()
-                .suppliers(productRepository.findDistinctSuppliers())
+                .suppliers(new ArrayList<>(suppliers))
                 .build());
     }
 
@@ -60,11 +65,21 @@ public class ProductService {
 
     @Transactional(readOnly = true)
     public ResponseEntity<ProductOptionsDto> options() {
+        TreeSet<String> categories = new TreeSet<>();
+        TreeSet<String> manufacturers = new TreeSet<>();
+        TreeSet<String> suppliers = new TreeSet<>();
+        TreeSet<String> units = new TreeSet<>();
+        for (Product product : productRepository.findAll()) {
+            addDistinctValue(categories, product.getCategory());
+            addDistinctValue(manufacturers, product.getManufacturer());
+            addDistinctValue(suppliers, product.getSupplier());
+            addDistinctValue(units, product.getUnit());
+        }
         return ResponseEntity.ok(ProductOptionsDto.builder()
-                .categories(productRepository.findDistinctCategories())
-                .manufacturers(productRepository.findDistinctManufacturers())
-                .suppliers(productRepository.findDistinctSuppliers())
-                .units(productRepository.findDistinctUnits())
+                .categories(new ArrayList<>(categories))
+                .manufacturers(new ArrayList<>(manufacturers))
+                .suppliers(new ArrayList<>(suppliers))
+                .units(new ArrayList<>(units))
                 .build());
     }
 
@@ -346,6 +361,12 @@ public class ProductService {
 
     private boolean isBlank(String value) {
         return value == null || value.isBlank();
+    }
+
+    private void addDistinctValue(TreeSet<String> values, String value) {
+        if (value != null && !value.trim().isEmpty()) {
+            values.add(value.trim());
+        }
     }
 
     public enum ProductDeleteReason {
