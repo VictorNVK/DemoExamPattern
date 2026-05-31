@@ -12,8 +12,10 @@ Java 21 · Spring Boot 4.0.6 · JPA · SQLite · Spring Security · SpringDoc Op
 
 ```powershell
 .\gradlew.bat bootRun
-python scripts\seed_db.py   # демо-данные (после первого запуска)
 ```
+
+**Данные:** положите xlsx в `input/` — импорт при пустой БД автоматически.  
+Альтернатива: `python scripts\seed_db.py` (папка `test_files/` в корне репозитория).
 
 Swagger: http://localhost:8082/api/v3/swagger-ui/index.html
 
@@ -24,7 +26,7 @@ Swagger: http://localhost:8082/api/v3/swagger-ui/index.html
 | POST | `/api/auth/login` | все |
 | GET | `/api/products` | все |
 | GET/POST/PUT/DELETE | `/api/products/**` | admin |
-| GET | `/api/orders` | manager, admin |
+| GET/POST/PUT/DELETE | `/api/orders/**` | manager/admin (GET), admin (CRUD) |
 | GET | `/api/files/images/{name}` | все |
 
 ## Структура
@@ -36,6 +38,8 @@ service/      бизнес-логика
 web/          controllers, DTO
 config/       Security, OpenAPI
 storage/      SQLite + images
+input/        xlsx и фото для автоимпорта
+importer/     ExamDataImportService, парсеры xlsx
 ```
 
 ## Модель
